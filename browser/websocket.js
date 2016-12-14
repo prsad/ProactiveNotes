@@ -22,10 +22,15 @@ var stream = reconnect(function(stream) {
   server.on('newAI', function(data) {
     console.log('New AI from server : ' + data);
     var obj = JSON.parse(data);
-    result.appendChild(document.createTextNode("Description : " + obj.description + "\n"
-        + "Due Date : " + obj.duedate + "\n"
-        + "Watcher : " + obj.watcher + "\n"
-        + "------------------------------------\n"));
+    var details = "Description : " + obj.description + "\n";
+    if(obj.duedate) {
+      details = details + "Due Date : " + obj.duedate + "\n";
+    }
+    if(obj.watcher) {
+      details = details + "Watchers : " + obj.watcher + "\n";
+    }
+    details =  details + "------------------------------------\n";
+    result.appendChild(document.createTextNode(details));
   });
  
   stream.once('end', function() {
