@@ -22,12 +22,12 @@ var stream = reconnect(function(stream) {
   server.on('newAI', function(data) {
     console.log('New AI from server : ' + data);
     var obj = JSON.parse(data);
-    var details = "Description : " + obj.description + "\n";
+    var details = obj.description + "\n";
     if(obj.duedate) {
-      details = details + "Due Date : " + obj.duedate + "\n";
+      details = details + "Due by : " + obj.duedate + "\n";
     }
     if(obj.watcher) {
-      details = details + "Watchers : " + obj.watcher + "\n";
+      details = details + "Watched by : " + obj.watcher + "\n";
     }
     details =  details + "------------------------------------\n";
     result.appendChild(document.createTextNode(details));
