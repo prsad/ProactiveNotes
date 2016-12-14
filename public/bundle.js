@@ -4,8 +4,6 @@ var reconnect = require('reconnect');
 
 var result = document.getElementById('result');
 
-
-
 var stream = reconnect(function(stream) {
   console.log('connected');
  
@@ -25,19 +23,15 @@ var stream = reconnect(function(stream) {
   server.on('newAI', function(data) {
     console.log('New AI from server : ' + data);
     var obj = JSON.parse(data);
-    /*console.log("obj : " + JSON.stringify(obj.value));
-    var keysArray = Object.keys(obj.value);
-    for (var i = 0; i < keysArray.length; i++) {
-      var key = keysArray[i]; // here is "name" of object property
-      var value = obj.value[key]; // here get value "by name" as it expected with objects
-      console.log(key, value);
+    var details = obj.description + "\n";
+    if(obj.duedate) {
+      details = details + "Due by : " + obj.duedate + "\n";
     }
-    var details = JSON.parse(JSON.stringify(obj.value));
-    console.log(details.description);*/
-    result.appendChild(document.createTextNode("Description : " + obj.description + "\n"
-        + "Due Date : " + obj.duedate + "\n"
-        + "Watcher : " + obj.watcher + "\n"
-        + "------------------------------------\n"));
+    if(obj.watcher) {
+      details = details + "Watched by : " + obj.watcher + "\n";
+    }
+    details =  details + "------------------------------------\n";
+    result.appendChild(document.createTextNode(details));
   });
  
   stream.once('end', function() {
