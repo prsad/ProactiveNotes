@@ -60,7 +60,7 @@ app.post('/upload', function (req, res) {
     });
 });
 
-var ecstatic = require('ecstatic')({root: __dirname + '/browser', handleError: false});
+var ecstatic = require('ecstatic')({root: __dirname + '/public', handleError: false});
 app.use(ecstatic);
 
 var server = require('http').createServer(app);
