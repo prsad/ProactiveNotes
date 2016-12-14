@@ -8,19 +8,19 @@ var str = '{\
     "AIs": [\
     {\
         "actor": "kshitiz",\
-        "due date": "Dec 16, 2016",\
+        "duedate": "Dec 16, 2016",\
         "description": "Finalize backup and restore design",\
         "watcher": "prasad"\
     },\
     {\
         "actor": "niranjan",\
-        "due date": "Dec 16, 2016",\
+        "duedate": "Dec 16, 2016",\
         "description": "Finish poc implementation",\
         "watcher": "kshitiz,prasad"\
     },\
     {\
         "actor": "prasad",\
-        "due date": "Dec 16, 2016",\
+        "duedate": "Dec 16, 2016",\
         "description": "Get status on CaaS project"\
     }\
     ]\
@@ -32,5 +32,5 @@ var obj = JSON.parse(str);
 obj.AIs.forEach(function (item) {
     var uuid = uuidV4();
     etcd.set('/actors/'+item.actor+"/"+uuid, JSON.stringify(item));
-    console.log('uuid'  + " added");
+    console.log(uuid  + " : \"" + JSON.stringify(item) + "\" added");
 })

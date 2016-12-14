@@ -4,20 +4,40 @@ var reconnect = require('reconnect');
 
 var result = document.getElementById('result');
 
+
+
 var stream = reconnect(function(stream) {
   console.log('connected');
  
   var server = duplexEmitter(stream);
  
-  var interval = setInterval(function() {
+  /*var interval = setInterval(function() {
     server.emit('ping', Date.now());
-  }, 1000);
- 
-  server.on('pong', function(timestamp) {
-    result.appendChild(document.createTextNode('got pong from server. ping time is ' +
-        (Date.now() - timestamp) + ' ms\n'));
-    console.log('got pong from server. ping time is ' + 
-     (Date.now() - timestamp) + ' ms');
+  }, 1000);*/
+
+  var actorName =  getParameterByName('actor');
+  if(!actorName){
+    console.log("Actor name not found in query string");
+    actorName = 'kshitiz';
+  }
+  server.emit('actor', actorName);
+
+  server.on('newAI', function(data) {
+    console.log('New AI from server : ' + data);
+    var obj = JSON.parse(data);
+    /*console.log("obj : " + JSON.stringify(obj.value));
+    var keysArray = Object.keys(obj.value);
+    for (var i = 0; i < keysArray.length; i++) {
+      var key = keysArray[i]; // here is "name" of object property
+      var value = obj.value[key]; // here get value "by name" as it expected with objects
+      console.log(key, value);
+    }
+    var details = JSON.parse(JSON.stringify(obj.value));
+    console.log(details.description);*/
+    result.appendChild(document.createTextNode("Description : " + obj.description + "\n"
+        + "Due Date : " + obj.duedate + "\n"
+        + "Watcher : " + obj.watcher + "\n"
+        + "------------------------------------\n"));
   });
  
   stream.once('end', function() {
@@ -25,6 +45,17 @@ var stream = reconnect(function(stream) {
   });
 }).connect('/websocket');
 
+function getParameterByName(name, url) {
+  if (!url) {
+    url = window.location.href;
+  }
+  name = name.replace(/[\[\]]/g, "\\$&");
+  var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+      results = regex.exec(url);
+  if (!results) return null;
+  if (!results[2]) return '';
+  return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
 },{"duplex-emitter":8,"reconnect":15}],2:[function(require,module,exports){
 /*
  * Copyright (c) 2012 Mathieu Turcotte
