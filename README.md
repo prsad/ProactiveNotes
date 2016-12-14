@@ -31,7 +31,7 @@ For example: http://104.198.19.99:8080/?actor=Bob
 * Reminder notifications
 
 ## Under the covers
-* The server is in node.js and used etcd as a key value store, and to provide notifcations to specific watches set of some keys.
+* The server is in _node.js_ and uses _etcd_ as a key value store, and to provide notifcations to specific watches set of some keys.
 * The Application is deployed to GCP 
-* Uses Google Container Engine and is deployed as a multi-container Pod deployment exposed via an LB to the external world. 
+* It uses Google Container Engine - managed Kubenetes-  and is deployed as a multi-container Pod deployment. The service is exposed via an LB to the external world. 
 * In a future version we could consider Pod with one container each.
