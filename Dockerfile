@@ -1,13 +1,4 @@
-FROM node:4-onbuild
-#Creating an app directory
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+FROM quay.io/coreos/etcd:v2.3.7
+EXPOSE 2780
 
-COPY package.json /usr/src/app
-RUN npm install
 
-COPY . /usr/src/app
-
-EXPOSE 8080
-
-CMD [ "npm" , "start" ]
