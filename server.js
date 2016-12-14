@@ -14,9 +14,17 @@ var sock = shoe(function (stream) {
     client.on('actor', function (actorName) {
         streamActorName = actorName;
         console.log('Listening for AIs for actor ' + actorName);
+        etcd.get("/actors/" + actorName, { recursive: true }, callbackGet);
         watcher = etcd.watcher("/actors/" + actorName, null, {recursive: true});
         watcher.on("change", callback);
     });
+
+    function callbackGet(err, res) {
+        res.node.nodes.forEach(function (item) {
+            console.log("Sending AI", item.value);
+            client.emit("newAI", item.value);
+        });
+    }
 
     function callback(err, res) {
         console.log("Received AI : " + err.node.value);
