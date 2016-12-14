@@ -1,16 +1,27 @@
+//Define required dependencies
 var duplexEmitter = require('duplex-emitter');
 var shoe = require('shoe');
 var express = require('express')
-var app = express()
-var Etcd = require('node-etcd');
-var etcd = new Etcd("127.0.0.1:2379");
 const uuidV4 = require('uuid/v4');
+var Etcd = require('node-etcd');
 
+//express is used as web framework to handle post and static content
+var app = express()
+
+//etcd is KV store for meeting minutes and AIs
+var etcd = new Etcd("127.0.0.1:2379");
+
+//streaming sock for browser
 var sock = shoe(function (stream) {
+    //create client using duplex event emitter
     var client = duplexEmitter(stream);
+    //watcher variable holds the reference to etcd watch
     var watcher;
+    //actor name associated with the stream
     var streamActorName;
 
+    //for each client create a watch using this actor name
+    //and push etcd watch notifications to the client
     client.on('actor', function (actorName) {
         streamActorName = actorName;
         console.log('Listening for AIs for actor ' + actorName);
@@ -19,6 +30,7 @@ var sock = shoe(function (stream) {
         watcher.on("change", callback);
     });
 
+    //handle results from query to etcd to get initial set of AIs for actor
     function callbackGet(err, res) {
         res.node.nodes.forEach(function (item) {
             console.log("Sending AI", item.value);
@@ -26,11 +38,14 @@ var sock = shoe(function (stream) {
         });
     }
 
+    //handle results from etcd watch notification
     function callback(err, res) {
         console.log("Received AI : " + err.node.value);
         client.emit("newAI", err.node.value);
     }
 
+    //Handle end of stream from client
+    //perform cleanup
     stream.on('end', function () {
         if (watcher) {
             console.log("Stopping watch for actor " + streamActorName);
@@ -38,6 +53,8 @@ var sock = shoe(function (stream) {
         }
     });
 
+    //Handle close of stream from client
+    //perform cleanup
     stream.on('close', function () {
         if (watcher) {
             console.log("Stopping watch for actor " + streamActorName);
@@ -47,7 +64,7 @@ var sock = shoe(function (stream) {
 
 });
 
-
+//Handle upload request containing meeting minutes
 app.post('/upload', function (req, res) {
     var body = '';
     req.on('data', function (data) {
@@ -60,16 +77,20 @@ app.post('/upload', function (req, res) {
     });
 });
 
+//ecstatic serves static content
 var ecstatic = require('ecstatic')({root: __dirname + '/public', handleError: false});
 app.use(ecstatic);
 
+//start http server on port 8080
 var server = require('http').createServer(app);
 server.listen(8080, function () {
     console.log('Server listening');
 });
 
+//set context-root websocket for websocket connections
 sock.install(server, '/websocket')
 
+//parse AIs from meeting minutes
 function parseAI(body) {
     var lines = body.split("\n");
     var meeting = {};
@@ -120,6 +141,7 @@ function parseAI(body) {
     return meeting;
 }
 
+//parse date for AI to have them in standard format
 function parseDate(input) {
     var tokens = '';
     var delemitter = '/';
@@ -142,7 +164,7 @@ function parseDate(input) {
     return dueDate;
 }
 
-
+//save meeting minutes and AIs in etcd KV
 function saveMinutes(input, body) {
     var meeting = input;
     var meetingUUID = uuidV4();
