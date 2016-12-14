@@ -8,7 +8,19 @@ A sample of such meeting notes is
 > <dl> #AI @Bob follow up with Claire on JIRA updates </dl>
 > <dl> #AI Derek to send email to team due 12/16 </dl>
 
-An actor can register themselves to get AIs in their queue and any newly added AIs by registering themselves to server using url:
+Use of hash-tag AI either at the beginning or end of the line indicates that this is an AI.
+Use of @ implies the Actor on whom this AI is on
+Due dates are parsed by a preceeding "due" or "by"
+
+## HOWTO
+### Uploading the meeting notes
+Use Postman or wget to send a POST request to the following URL:
+<dl>"http://server-name:server-port/upload" </dl>
+For example : http://104.198.19.99:8080/upload
+The meeting notes in a text format needs to be sent as a payload to this POST request. The notes need to be in the format above , with annotations and hastags as explained above.
+
+### Subscribing and viewing AIs
+An actor can register themselves to get AIs in their queue and any newly added AIs by registering themselves to server using URL:
 <dl>"http://server-name:server-port/?actor=actor-name" </dl>
 For example: http://104.198.19.99:8080/?actor=Bob
 
