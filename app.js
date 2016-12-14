@@ -3,25 +3,30 @@
  * Module dependencies.
  */
 
-var MongoClient = require('mongodb').MongoClient;
-var assert = require('assert');
+
+
 var url = require('url'),
 
 http = require('http'),
 
 qs = require('querystring');
 
-var url = 'mongodb://localhost:27017/meeting_notes';
+var Etcd = require('node-etcd');
+const uuidV4 = require('uuid-v4');
+var etcd = new Etcd("127.0.0.1:2379");
+/*var MongoClient = require('mongodb').MongoClient;
+var assert = require('assert');
+var url = 'mongodb://localhost:27017/meeting_notes';*/
 
 http.createServer(function (req, res) {
-    if(req.method=='POST') {
+    if(req.method=='POST' && req.url.indexOf("/upload")!=-1) {
             var body='';
             req.on('data', function (data) {
                 body +=data;
             });
             req.on('end',function(){
             	var result = parseAI(body)
-            	insertAItoDB(result);
+            	saveMinutes(result);
             	res.end(JSON.stringify(result));
             });
     }
@@ -33,17 +38,18 @@ http.createServer(function (req, res) {
 
 function parseAI(body) {
 	var lines = body.split("\n");
+	var meeting={};
 	var arr = [];
-	var meeting = '';
+	var meetDes = '';
 	for(var i=0; i< lines.length; i++) {
 		var line = lines[i];
 		if(line.startsWith("#meeting")){
-			meeting = line.substring(9, line.length);
+			meetDes = line.substring(9, line.length);
 			continue;
 		}
 		if(line.startsWith("#AI") || line.endsWith("#AI")) {
 			if(line.indexOf("@")!=-1){
-			    var user='';
+			    var actor='';
 				var description = '';
 				var dueDate =''
 		    	var tokens = line.split(" ");
@@ -55,7 +61,7 @@ function parseAI(body) {
 						continue;
 					}
 					if(token.startsWith("@")) {
-						user=token;
+						actor=token;
 						userFound = true;
 						continue;
 					}
@@ -70,12 +76,16 @@ function parseAI(body) {
 					}
 					dueDate = token;
 				}
-		    	var record = {"user" : user, "meeting" : meeting, "description" : description, "duedate" : parseDate(dueDate)}
+		    	var record = {"actor" : actor, "description"  : description, "duedate" : parseDate(dueDate)}
 		    	arr.push(record);
 			}
+			meeting.id = "Meeting-" + Math.floor(1000 + Math.random() * 9000)
+			meeting.date = "";
+			meeting.description = meetDes;
+			meeting.AIs = arr;
 		}
 	}
-	return arr;	
+	return meeting;	
 }
 
 function parseDate(input) {
@@ -100,7 +110,52 @@ function parseDate(input) {
 	return dueDate;
 }
 
-function insertAItoDB(list) {
+
+function saveMinutes(input) {
+	var meeting = input;
+	etcd.set('/meetings/'+meeting.id+'/', {"date": meeting.date, "description": meeting.description})
+	meeting.AIs.forEach(function (item) {
+	    var uuid = uuidV4();
+	    item.meetingId = meeting.id;
+	    etcd.set('/actors/'+item.actor+"/"+uuid, JSON.stringify(item));
+	    console.log('uuid'  + " added");
+	})
+	
+}
+
+/*function findMeetingDate(meeting) {
+	var meetingDate ='';
+	var tokens = meeting.split(" ");
+	for (var i=0; i< tokens.length; i++) {
+		var token = tokens[i];
+		var date, month, year ='';
+		var dateFound, monthFound = false;
+		if(token.indexOf("/")!=-1 || token.indexOf("-")!=-1){
+			meetingDate = parseDate(token);
+			if(meetingDate instanceof Date) {
+				return meetingDate;
+			}
+			if(token > 0 && token <13) {
+				date = token;
+				dateFound = true;
+				continue;
+			}
+			for(var k=0; k < months.length; k++){
+				if(month[k].startsWith(token)){
+					month = k + 1;
+					monthFound = true;
+					break;
+				}
+			}
+			
+			
+		}
+	}
+}/*
+
+
+
+/*function insertAItoDB(list) {
 	MongoClient.connect(url, function(err, db) {
 		  assert.equal(null, err);
 		  db.collection('action_items').insert(list, function(err, result) {
@@ -126,4 +181,4 @@ function readAllAI() {
 		   });
 	});
 	return allAI;
-}
+}*/
