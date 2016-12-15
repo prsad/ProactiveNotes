@@ -17,7 +17,7 @@ Due dates are parsed by a preceeding "due" or "by"
 Use Postman or wget to send a POST request to the following URL:
 <dl>"http://server-name:server-port/upload" </dl>
 For example : http://104.198.19.99:8080/upload
-The meeting notes in a text format needs to be sent as a payload to this POST request. The notes need to be in the format above , with annotations and hastags as explained above.
+The meeting notes in a text format needs to be sent as a payload to this POST request. The notes need to be in the format above , with annotations and hastags as explained above. The dates need be in mm/dd format.
 
 ### Subscribing and viewing AIs
 An actor can register themselves to get AIs in their queue and any newly added AIs by registering themselves to server using URL:
